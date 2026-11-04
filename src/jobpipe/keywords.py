@@ -275,9 +275,11 @@ def find_phrase(form: str, text: str) -> str:
     return m.group(0) if m else ""
 
 
+@lru_cache(maxsize=512)
 def find_terms(text: str, categories: tuple[str, ...] = ("tool", "skill", "title", "language")
                ) -> dict[str, str]:
-    """Canonical vocabulary terms present in ``text`` (exact or synonym) -> matched text."""
+    """Canonical vocabulary terms present in ``text`` (exact or synonym) -> matched text.
+    Cached: callers must not mutate the returned dict."""
     found: dict[str, str] = {}
     for canonical, (category, _) in TERMS.items():
         if category not in categories:

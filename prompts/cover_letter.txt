@@ -1,0 +1,21 @@
+TASK: Write a cover letter from $name for the $role role at $company.
+
+PROFILE FACTS (the only facts you may use about the candidate):
+$facts
+
+JOB POSTING (excerpt):
+$posting
+
+Keywords from the posting that the profile supports: $keywords
+
+Strongest evidence points from the profile:
+$evidence
+
+Requirements:
+- Body of 250-350 words (salutation and sign-off excluded), in 3-4 short paragraphs.
+- Salutation: "Dear Hiring Team at $company," unless the posting names a person.
+- Open with a specific hook about $company and the $role role, using something concrete from the posting. NEVER open with "I am writing to apply for", "I am writing to express my interest" or any similar formula.
+- Use 2-3 evidence points from PROFILE FACTS, keeping every number exactly as written. When talking about yourself, mention only skills, tools and results that appear in PROFILE FACTS.
+- $work_auth_instruction
+- Close concisely in one or two sentences, then "Kind regards," and the name $name on its own line.
+- Rules 1-4 from the system prompt apply. Return only the letter text.

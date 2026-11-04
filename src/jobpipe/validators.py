@@ -362,34 +362,37 @@ def claims_check(
     reference: Iterable[str],
     *,
     allow: Iterable[str] = (),
+    known_names: str = "",
     check_novelty: bool = False,
     max_new_ratio: float = 0.3,
 ) -> list[Issue]:
     """Compare generated ``text`` with ``reference`` facts and flag unsupported claims.
 
+    ``allow`` lists literal strings that are not claims (the target company and role) and are
+    removed before checking. ``known_names`` is extra text whose proper nouns may be named
+    (e.g. the job posting), without making its numbers or skills claimable.
+
     Flags (all severity "error"):
       - numbers (digits or number words) not present in the reference;
       - known tools / skills / titles / languages not present in the reference;
-      - proper nouns not present in the reference or ``allow``;
+      - proper nouns not present in the reference;
       - with ``check_novelty``: too many content words that appear nowhere in the reference.
     """
     ref_text = "\n".join(reference)
-    allowed_text = "\n".join(allow)
+    allowed_text = known_names
     issues: list[Issue] = []
     excerpt = " ".join(text.split())[:160]
 
-    ref_numbers = _number_words(ref_text) | _numbers(allowed_text)
-    for num in sorted(_numbers(text) - ref_numbers):
-        word_forms = {w for w, d in NUMBER_WORDS.items() if d == num}
-        if word_forms & ref_numbers:
-            continue
+    scrubbed = text
+    for a in sorted(allow, key=len, reverse=True):
+        if a:
+            scrubbed = re.sub(re.escape(a), " ", scrubbed, flags=re.I)
+
+    ref_numbers = _number_words(ref_text)
+    for num in sorted(_numbers(scrubbed) - ref_numbers):
         issues.append(Issue("unsupported_number",
                             f"Number '{num}' does not appear in the profile.", excerpt=excerpt))
 
-    scrubbed = text
-    for a in allow:
-        if a:
-            scrubbed = re.sub(re.escape(a), " ", scrubbed, flags=re.I)
     ref_terms = find_terms(ref_text)
     for canonical, hit in find_terms(scrubbed).items():
         if canonical not in ref_terms:
@@ -409,7 +412,7 @@ def claims_check(
 
     if check_novelty:
         generated = _content_stems(scrubbed) - {_stem(v) for v in ACTION_VERBS}
-        known = _content_stems(ref_text) | _content_stems(allowed_text)
+        known = _content_stems(ref_text)
         new = sorted(generated - known)
         if generated and len(new) > max(2, max_new_ratio * len(generated)):
             issues.append(Issue("unsupported_content",
@@ -421,8 +424,8 @@ def claims_check(
 _FIRST_PERSON_RE = re.compile(r"\b(?:I|I'm|I've|I'd|my|me|myself)\b")
 
 
-def letter_claims_check(text: str, reference: Iterable[str], *, allow: Iterable[str] = ()
-                        ) -> list[Issue]:
+def letter_claims_check(text: str, reference: Iterable[str], *, allow: Iterable[str] = (),
+                        known_names: str = "") -> list[Issue]:
     """Claims check for cover letters: only first-person sentences make claims about the
     candidate, so sentences about the company or role are not checked."""
     reference = list(reference)
@@ -432,5 +435,5 @@ def letter_claims_check(text: str, reference: Iterable[str], *, allow: Iterable[
     for paragraph in paragraphs:
         for sentence in re.split(r"(?<=[.!?])\s+", paragraph):
             if _FIRST_PERSON_RE.search(_norm(sentence)):
-                issues += claims_check(sentence, reference, allow=allow)
+                issues += claims_check(sentence, reference, allow=allow, known_names=known_names)
     return issues

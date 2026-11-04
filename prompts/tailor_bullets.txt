@@ -1,0 +1,16 @@
+TASK: Rephrase resume bullets for the $role role at $company.
+
+These bullets describe the candidate's time as $title at $employer ($dates).
+
+Keywords from the job posting that the candidate's profile genuinely supports. Use the exact phrasing where it fits naturally, and never add a keyword the bullet does not already support:
+$keywords
+
+Bullets (JSON array):
+$bullets_json
+
+Instructions:
+- Return ONLY a JSON array of $count strings, in the same order as the input.
+- Each output item must say the same thing as the input item at the same position. Keep every number, name and tool exactly as written. Do not add numbers, tools, clients, regions or outcomes.
+- Start each bullet with a strong action verb (past tense; present tense only for a current role) and follow action + scope + result when the input contains them.
+- Keep each bullet under 30 words. No first person ("I", "my").
+- Rules 1-4 from the system prompt apply.
