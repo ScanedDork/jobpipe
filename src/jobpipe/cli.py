@@ -4,8 +4,10 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Annotated
+from zipfile import BadZipFile
 
 import typer
+from docx.opc.exceptions import PackageNotFoundError
 
 from jobpipe.keywords import parse_posting
 from jobpipe.llm import LLMError, get_client, provider_is_implicit
@@ -169,7 +171,10 @@ def score(
 ) -> None:
     """Score a resume (and optional cover letter) for ATS readiness."""
     job_text = job.read_text(encoding="utf-8") if job else None
-    report = score_documents(resume, cover, job_text)
+    try:
+        report = score_documents(resume, cover, job_text)
+    except (PackageNotFoundError, BadZipFile, KeyError, ValueError) as exc:
+        _fail(f"Could not read the document as .docx: {exc}")
     markdown = report.to_markdown(f"ATS report: {resume.name}")
     if out:
         out.parent.mkdir(parents=True, exist_ok=True)

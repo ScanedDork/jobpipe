@@ -113,6 +113,13 @@ def test_misconfigured_provider_is_reported(tmp_path, monkeypatch):
     assert result.exit_code == 2 and "ANTHROPIC_API_KEY" in result.output
 
 
+def test_score_rejects_non_docx(tmp_path):
+    fake = tmp_path / "Taylor_Sample_Resume_Acme.docx"
+    fake.write_text("not a docx")
+    result = runner.invoke(app, ["score", "--resume", str(fake)])
+    assert result.exit_code == 2 and "Could not read" in result.output
+
+
 def test_list_when_empty(tmp_path):
     result = runner.invoke(app, ["--db", str(tmp_path / "jobs.db"), "list"])
     assert "No applications tracked yet." in result.output
