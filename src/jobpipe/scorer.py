@@ -396,6 +396,10 @@ def _length(info: DocInfo, cover_words: int | None, red: list[str],
     elif words < 350:
         resume_score = 75
         notes.append("Thin: 350+ words usually needed to cover keywords and results.")
+        findings.append(Finding("Resume (whole document)", f"{words} words",
+                                "Thin resume: little room for keywords and results.",
+                                "Add 2-3 more quantified bullets from your own records to "
+                                "profile.yaml (never invented), then regenerate."))
     else:
         resume_score = 100
     if cover_words is None:
@@ -576,8 +580,9 @@ def _keyword_section(report: ScoreReport) -> list[str]:
 def _to_markdown(report: ScoreReport, title: str) -> str:
     lines = [f"# {title}", "",
              f"**Overall: {report.overall}/100 ({report.grade})**", "",
-             "Scores are deliberately strict: B means safe to send, A is rare. "
-             + ("A hard-rule violation caps the score at 59." if report.hard_violations else ""),
+             "Scores are deliberately strict: B means safe to send, A is rare."
+             + (" A hard-rule violation caps the score at 59." if report.hard_violations
+                else ""),
              "", "| Category | Score | Grade |", "|---|---|---|"]
     for c in report.categories:
         lines.append(f"| {LABELS[c.key]} | {c.score} | {c.grade} |")
