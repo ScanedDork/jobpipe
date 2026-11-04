@@ -1,0 +1,27 @@
+Customer Success Manager (Mid-level) — Acme Payments, Prague
+
+Acme Payments builds invoicing and payment software for small and mid-sized businesses across
+Central Europe. We are growing our Prague hub and need a Customer Success Manager to own a book
+of mid-market accounts in the DACH region.
+
+What you will do
+- Own onboarding, adoption and renewals for a portfolio of 40-60 mid-market accounts
+- Run quarterly business reviews (QBRs) and build account plans with key stakeholders
+- Identify upselling and cross-selling opportunities together with our Account Executives
+- Track health scores, NPS and churn risk in Gainsight and Salesforce
+- Feed customer insights back to Product Management via Jira
+
+What you bring
+- 3+ years in customer success or account management in B2B SaaS
+- Proven track record of reducing churn and growing net revenue retention
+- Hands-on experience with Salesforce or HubSpot CRM
+- Strong negotiation and stakeholder management skills
+- English (C1) and German (B2 or higher)
+- Data-driven: comfortable with Excel and KPI dashboards
+
+Nice to have
+- Experience with Gainsight
+- Czech language skills
+- Background in fintech or payments
+
+Apply at https://careers.acme.example/jobs/csm-prague

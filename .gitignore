@@ -1,0 +1,19 @@
+# Your real profile: never commit it (copy profile/profile.template.yaml to create it)
+profile/profile.yaml
+
+# Generated documents, reports and the tracker database
+/output/
+/data/
+*.db
+*.sqlite
+
+# Python / tooling
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/

@@ -1,0 +1,87 @@
+# FAKE example profile. Every name, company, number and contact detail below is invented
+# for the README, the demo and the tests. Do not use it as a real resume.
+
+name:
+  full: Taylor Jordan Sample
+  preferred: Taylor Sample
+
+headline: Account manager for B2B SaaS and logistics clients
+location: Brno, Czech Republic
+
+contact:
+  email: taylor.sample@example.com
+  phone: "+420 600 000 000"
+  linkedin: linkedin.com/in/taylor-sample-example
+  website: ""
+
+work_authorisation: "EU work authorised, residency in process — no sponsorship required"
+
+target_roles:
+  - Customer Success
+  - Account Management
+
+summary: >-
+  Account manager with six years in B2B SaaS and logistics, owning renewals, customer onboarding
+  and upselling for mid-market clients in the DACH region and Central Europe. Works in English,
+  Czech and German.
+
+experience:
+  - title: Account Manager
+    company: Northwind Traders s.r.o.
+    location: Brno, Czech Republic
+    start: "2021"
+    end: Present
+    description: Mid-market B2B SaaS platform for freight and logistics teams.
+    bullets:
+      - Managed a portfolio of 45 mid-market accounts in the DACH region worth €2.1M in annual recurring revenue.
+      - Grew net revenue retention from 97% to 112% in two years by running quarterly business reviews and structured upselling.
+      - Cut average customer onboarding time from 30 to 18 days by introducing a Jira-based onboarding checklist.
+      - Negotiated 60+ contract renewals per year in Salesforce, keeping gross churn below 6%.
+      - Trained 4 new account managers on discovery calls, renewals and HubSpot reporting.
+  - title: Business Development Associate
+    company: Contoso Logistics GmbH
+    location: Vienna, Austria
+    start: "2018"
+    end: "2021"
+    description: Freight-forwarding company serving manufacturers in Central Europe.
+    bullets:
+      - Generated 120 qualified leads per quarter through LinkedIn Sales Navigator prospecting and cold outreach.
+      - Closed 18 new B2B accounts worth €640K in first-year revenue.
+      - Built the team's first sales pipeline dashboard in Excel, used weekly by 9 sales staff.
+
+education:
+  - degree: BSc in International Business
+    institution: Example University of Economics
+    location: Prague, Czech Republic
+    year: "2018"
+
+certification_hours: "200+"
+certifications:
+  - name: Salesforce Certified Administrator
+    issuer: Salesforce
+    year: "2022"
+  - name: Customer Success Management Certificate
+    issuer: Example Academy
+    year: "2021"
+  - name: Agile Product Ownership
+    issuer: Example Agile Institute
+    year: "2020"
+
+skills:
+  - Account Management
+  - Customer Success
+  - Customer Onboarding
+  - Renewals
+  - Upselling
+  - Quarterly Business Reviews
+  - Salesforce
+  - HubSpot
+  - Jira
+  - Excel
+  - Negotiation
+  - Stakeholder Management
+
+languages:
+  - English (C1)
+  - Czech (native)
+  - German (B2)
