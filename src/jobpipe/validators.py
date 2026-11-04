@@ -99,7 +99,7 @@ _BANNED_OPENINGS = [
     r"posting|listing|vacancy)",
 ]
 _BANNED_OPENING_RE = re.compile(r"^(?:" + "|".join(_BANNED_OPENINGS) + r")", re.I)
-_SALUTATION_RE = re.compile(
+SALUTATION_RE = re.compile(
     r"^(?:dear|hello|hi|hey|greetings|good\s+(?:morning|afternoon)|to\s+whom)\b[^\n,:!]*[,:!]?",
     re.I,
 )
@@ -121,7 +121,7 @@ def letter_parts(text: str) -> tuple[str, list[str], str]:
             signoff_lines.append(line)
             continue
         if not salutation and not any(body_lines) and line:
-            m = _SALUTATION_RE.match(line)
+            m = SALUTATION_RE.match(line)
             if m:
                 salutation = m.group(0).strip()
                 rest = line[m.end():].strip()

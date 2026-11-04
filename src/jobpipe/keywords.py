@@ -16,8 +16,8 @@ from functools import lru_cache
 # canonical term -> (category, synonyms)
 TERMS: dict[str, tuple[str, tuple[str, ...]]] = {
     # --- tools -----------------------------------------------------------------------
-    "Salesforce": ("tool", ("SFDC", "Salesforce CRM", "Sales Cloud")),
-    "HubSpot": ("tool", ("HubSpot CRM",)),
+    "Salesforce": ("tool", ("SFDC", "Sales Cloud")),
+    "HubSpot": ("tool", ()),
     "Pipedrive": ("tool", ()),
     "Microsoft Dynamics 365": ("tool", ("Dynamics 365", "MS Dynamics", "Microsoft Dynamics")),
     "Zoho CRM": ("tool", ()),
@@ -339,11 +339,10 @@ def guess_title(text: str) -> str:
     return ""
 
 
-def extract_keywords(text: str, *, title: str = "", exclude: tuple[str, ...] = ()
-                     ) -> list[Keyword]:
+def extract_keywords(text: str, *, title: str = "", company: str = "") -> list[Keyword]:
     """Extract weighted keywords (hard skills, tools, titles, seniority, languages)."""
     sections = _split_sections(text)
-    excluded = {e.lower() for e in exclude}
+    excluded = {w.lower() for w in company.split()}
     stats: dict[str, dict] = {}
 
     def record(canonical: str, phrase: str, category: str, weight: float) -> None:
@@ -353,6 +352,9 @@ def extract_keywords(text: str, *, title: str = "", exclude: tuple[str, ...] = (
         s["weight"] = max(s["weight"], weight)
 
     first_line = next((line for _, line in sections), "")
+    # The company's own name ("Acme Payments") is not a keyword, even if it contains one.
+    company_re = (re.compile(rf"(?i:\b{re.escape(company)}\b)(?:\s+[A-Z][\w&.\-]*)*")
+                  if company else None)
     # Longest forms first: a span claimed by "net revenue retention" is not also counted as
     # "retention", and "Customer Success Manager" is not also counted as "customer success".
     all_forms = sorted(((form, canonical, category) for canonical, (category, _) in TERMS.items()
@@ -364,6 +366,8 @@ def extract_keywords(text: str, *, title: str = "", exclude: tuple[str, ...] = (
         if line == first_line:
             weight = max(weight, 2.0)
         scan = _URL_RE.sub(" ", line)
+        if company_re:
+            scan = company_re.sub(lambda m: " " * len(m.group(0)), scan)
         claimed: list[tuple[int, int]] = []
         for form, canonical, category in all_forms:
             for m in phrase_pattern(form).finditer(scan):
@@ -392,14 +396,13 @@ def extract_keywords(text: str, *, title: str = "", exclude: tuple[str, ...] = (
 
 def parse_posting(text: str, *, title: str | None = None, company: str = "") -> JobPosting:
     resolved_title = title or guess_title(text)
-    exclude = tuple(w for w in re.split(r"\s+", company) if w) if company else ()
     years = [int(m.group(1)) for m in _YEARS_RE.finditer(text)]
     url = _URL_RE.search(text)
     return JobPosting(
         text=text,
         title=resolved_title,
         url=url.group(0).rstrip(".,)") if url else "",
-        keywords=extract_keywords(text, title=resolved_title, exclude=exclude),
+        keywords=extract_keywords(text, title=resolved_title, company=company),
         years_required=max(years) if years else None,
     )
 
