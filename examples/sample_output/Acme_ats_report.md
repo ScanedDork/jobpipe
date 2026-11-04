@@ -47,10 +47,10 @@ Scores are deliberately strict: B means safe to send, A is rare.
 | HubSpot | tool | 2 | exact | exact |
 | KPI | skill | 2 | missing | missing |
 | Mid-level | seniority | 2 | missing | missing |
-| negotiation | skill | 2 | exact | synonym |
+| negotiation | skill | 2 | exact | exact |
 | net revenue retention | skill | 2 | exact | exact |
 | SaaS | skill | 2 | exact | exact |
-| stakeholder management | skill | 2 | exact | missing |
+| stakeholder management | skill | 2 | exact | exact |
 | Gainsight | tool | 1 | missing | missing |
 | payment | skill | 1 | missing | exact |
 | quarterly business reviews | skill | 1 | exact | exact |
@@ -58,14 +58,14 @@ Scores are deliberately strict: B means safe to send, A is rare.
 | account plans | skill | 1 | missing | missing |
 | cross-selling | skill | 1 | missing | missing |
 | health scores | skill | 1 | missing | missing |
-| onboarding | skill | 1 | exact | exact |
-| Jira | tool | 1 | exact | exact |
+| onboarding | skill | 1 | exact | missing |
+| Jira | tool | 1 | exact | missing |
 | NPS | skill | 1 | missing | missing |
 | Product Management | skill | 1 | missing | missing |
 | renewals | skill | 1 | exact | exact |
 | upselling | skill | 1 | exact | exact |
 | Czech | language | 0.5 | exact | exact |
-| DACH | other | 0.5 | exact | missing |
+| DACH | other | 0.5 | exact | exact |
 | fintech | skill | 0.5 | missing | missing |
 
 ## Category notes
@@ -82,7 +82,7 @@ Scores are deliberately strict: B means safe to send, A is rare.
 **Length (82, B)**
 - Resume: 281 words, about 1.0 page(s) (estimate).
 - Thin: 350+ words usually needed to cover keywords and results.
-- Cover letter body: 256 words (target 250-350).
+- Cover letter body: 253 words (target 250-350).
 
 **Rule violations (100, A)**
 - 0 hard-rule violation(s); 0 placeholder(s).

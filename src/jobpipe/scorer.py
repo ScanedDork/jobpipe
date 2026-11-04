@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import math
 import re
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -372,13 +373,20 @@ def _bullets(info: DocInfo, red: list[str], findings: list[Finding]) -> Category
     return Category("bullets", score, notes)
 
 
-def _estimate_pages(info: DocInfo) -> float:
+def estimate_pages(paragraphs: Iterable[tuple[str, str]]) -> float:
+    """Rough A4 page estimate from (text, style name) pairs at about 11 pt."""
     lines = 0.0
-    for p in info.paragraphs:
-        lines += max(1, math.ceil(len(p.text) / 95))
-        if p.style.lower().startswith("heading"):
+    for text, style in paragraphs:
+        if not text.strip():
+            continue
+        lines += max(1, math.ceil(len(text) / 95))
+        if style.lower().startswith("heading"):
             lines += 1  # spacing around headings
     return round(lines / 46, 2)
+
+
+def _estimate_pages(info: DocInfo) -> float:
+    return estimate_pages((p.text, p.style) for p in info.paragraphs)
 
 
 def _length(info: DocInfo, cover_words: int | None, red: list[str],
@@ -425,11 +433,19 @@ def _cover_content(text: str, company: str, red: list[str], findings: list[Findi
         red.append(f"Cover letter never names {company}: it reads as generic.")
         findings.append(Finding("Cover letter", "(whole letter)", "No company-specific hook.",
                                 f"Open with something concrete about {company} and the role."))
-    if not re.search(r"\d", body):
+    sentences = re.split(r"(?<=[.!?])\s+", body)
+    evidence = [x for x in sentences if re.search(r"\d", x) and re.search(r"\b(?:I|my|me)\b", x)]
+    if not evidence:
         score -= 15
         notes.append("-15: no quantified evidence.")
         findings.append(Finding("Cover letter", "(evidence)", "No numbers in the letter.",
                                 "Include 2-3 quantified results from your profile."))
+    elif len(evidence) < 2:
+        score -= 10
+        notes.append("-10: only one quantified evidence point; use 2-3.")
+        findings.append(Finding("Cover letter", _short(evidence[0]),
+                                "Only one quantified evidence point.",
+                                "Add a second result with a real number from your profile."))
     if not 3 <= len(paragraphs) <= 5:
         score -= 10
         notes.append(f"-10: {len(paragraphs)} paragraph(s); 3-5 short paragraphs scan best.")

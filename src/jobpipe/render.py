@@ -20,6 +20,7 @@ from docx.shared import Cm, Pt, RGBColor
 
 from jobpipe import resource_dir
 from jobpipe.profile import Profile, is_placeholder
+from jobpipe.scorer import estimate_pages
 from jobpipe.tailor import TailoredResume
 from jobpipe.validators import STANDARD_FONTS, STANDARD_HEADINGS, letter_parts, output_filenames
 
@@ -186,8 +187,41 @@ def _join_parts(*parts: str) -> str:
     return " | ".join(p for p in parts if p and not is_placeholder(p))
 
 
-def render_resume(tailored: TailoredResume, path: str | Path, template: Template) -> Path:
+MAX_PAGES = 2.0
+
+
+def _trim_one_bullet(tailored: TailoredResume, max_pages: float) -> bool:
+    """Drop the least relevant bullet of the oldest role that can spare one (older roles
+    keep at least 2 bullets, the most recent keeps at least 3). Bullets are already sorted
+    by relevance, so the last one goes first."""
+    for index in range(len(tailored.roles) - 1, -1, -1):
+        role = tailored.roles[index]
+        keep = 3 if index == 0 else 2
+        if len(role.bullets) > keep:
+            dropped = role.bullets.pop()
+            exp = role.experience
+            tailored.notes.append(f"Left out \"{dropped}\" ({exp.title} at {exp.company}) to "
+                                  f"keep the resume within {max_pages:g} pages.")
+            return True
+    return False
+
+
+def render_resume(tailored: TailoredResume, path: str | Path, template: Template, *,
+                  max_pages: float = MAX_PAGES) -> Path:
+    """Render the resume, trimming the least relevant bullets of older roles while the
+    estimated length exceeds ``max_pages``."""
     path = Path(path)
+    while True:
+        doc = _build_resume(tailored, template)
+        pages = estimate_pages((p.text, p.style.name) for p in doc.paragraphs)
+        if pages <= max_pages or not _trim_one_bullet(tailored, max_pages):
+            break
+    path.parent.mkdir(parents=True, exist_ok=True)
+    doc.save(str(path))
+    return path
+
+
+def _build_resume(tailored: TailoredResume, template: Template) -> DocxDocument:
     profile = tailored.profile
     doc = _new_document(template)
     _header_block(doc, profile, template, with_auth=True)
@@ -235,9 +269,7 @@ def render_resume(tailored: TailoredResume, path: str | Path, template: Template
                 _paragraph(doc, (", ".join(languages), False))
 
     _set_properties(doc, profile, f"{profile.preferred_name} – Resume")
-    path.parent.mkdir(parents=True, exist_ok=True)
-    doc.save(str(path))
-    return path
+    return doc
 
 
 # --- cover letter -------------------------------------------------------------------------

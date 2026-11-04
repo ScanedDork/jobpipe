@@ -146,3 +146,11 @@ def test_markdown_report_sections(good_docs, posting_text):
                     "| Keyword | Type | Weight | Resume | Cover letter |", "## Category notes",
                     "## Claims check"):
         assert heading in md
+
+
+def test_single_evidence_point_in_letter_is_flagged(good_docs, tmp_path):
+    cover = _letter_docx(tmp_path / "Taylor_Sample_CoverLetter_Acme.docx",
+                         "Acme's growth in the DACH region stood out.")
+    report = score_documents(good_docs["resume"], cover)
+    assert any("only one quantified evidence point" in n
+               for n in report.category("cover").notes)

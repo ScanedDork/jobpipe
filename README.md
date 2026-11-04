@@ -168,9 +168,9 @@ category. The scoring is strict on purpose: B means safe to send, and A is rare.
 | Keyword match (needs a posting) | Tools, hard skills, titles and languages from the posting, weighted by section ("requirements" x2, "nice to have" x0.5). An exact phrase earns full credit; a synonym earns 75%, since many ATS miss synonyms. Seniority terms and years of experience are reported but not scored. |
 | Structure & parseability | Tables, text boxes, images or icons, multiple columns, header/footer text, non-standard fonts, missing or non-standard headings, contact details, decorative symbols. |
 | Bullet quality | Action verb first, a number in the bullet, weak phrases ("responsible for"), pronouns, length. |
-| Length | Resume words and estimated pages (1-2); cover letter body of 250-350 words. |
+| Length | Resume words and estimated pages (1-2); cover letter body of 250-350 words. When rendering, jobpipe keeps the resume within 2 pages by leaving out the least relevant bullets of older roles, and the report lists each one. |
 | Rule violations | The hard rules above, plus leftover placeholders. Any hard violation caps the overall score at 59 (F). |
-| Cover letter content | A company-specific hook, quantified evidence, 3-5 paragraphs, no clichés. |
+| Cover letter content | A company-specific hook, 2-3 quantified evidence points, 3-5 paragraphs, no clichés. |
 
 The markdown report lists red flags, line-level fixes, a full keyword table (resume and
 cover letter), notes for each category and, from `apply`, the generation notes, the claims
@@ -206,7 +206,7 @@ an unrecognised heading or a missing core section. Layout features that hurt par
 ## Development
 
 ```bash
-pytest           # 160+ tests, no network access
+pytest           # 170+ tests, no network access
 ruff check .
 ```
 

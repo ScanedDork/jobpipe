@@ -34,6 +34,7 @@ from jobpipe.validators import (
 )
 
 MIN_LETTER_WORDS, MAX_LETTER_WORDS = 250, 350
+MAX_EVIDENCE_POINTS = 3  # the brief: 2-3 evidence points per cover letter
 
 
 @dataclass
@@ -282,10 +283,8 @@ def evidence_points(tailored: TailoredResume, limit: int = 4) -> list[tuple[Expe
     return [(exp, bullet) for _, _, _, exp, bullet in sorted(top, key=lambda t: (t[1], t[2]))]
 
 
-def _company_sentence(posting: str, company: str) -> str:
-    """First plain sentence of the posting that describes the company, for the hook."""
-    if not company:
-        return ""
+def _posting_sentences(posting: str) -> list[str]:
+    """Plain prose sentences of a posting (bullet lists and headings excluded)."""
     paragraphs, current = [], []
     for line in [*posting.splitlines(), ""]:
         line = line.strip()
@@ -294,8 +293,37 @@ def _company_sentence(posting: str, company: str) -> str:
         elif current:
             paragraphs.append(" ".join(current))
             current = []
-    sentences = [s for p in paragraphs for s in re.split(r"(?<=[.!?])\s+", p)]
-    for sentence in sentences:
+    return [s for p in paragraphs for s in re.split(r"(?<=[.!?])\s+", p)]
+
+
+_NEED_RE = re.compile(r"\b(?:need|needs|looking\s+for|hiring|seeking|growing|building|"
+                      r"expanding|scaling)\b", re.I)
+_PRONOUNS = {"we": "you", "our": "your", "us": "you", "ours": "yours", "we're": "you're",
+             "we've": "you've", "we'll": "you'll"}
+
+
+def _need_sentence(posting: str, role: str) -> str:
+    """The posting's own 'we are hiring/growing...' sentence, turned to second person."""
+    for sentence in _posting_sentences(posting):
+        words = sentence.split()
+        if (re.match(r"We(?:\s|'(?:re|ve|ll)\b)", sentence) and 8 <= len(words) <= 40
+                and (role.lower() in sentence.lower() or _NEED_RE.search(sentence))
+                and not re.search(r"\b(?:offer|apply|benefits?|salary)\b|http", sentence,
+                                  re.I)):
+            def swap(m: re.Match) -> str:
+                word = m.group(0)
+                new = _PRONOUNS[word.lower()]
+                return new.capitalize() if word[0].isupper() else new
+            return re.sub(r"\b(?:we're|we've|we'll|we|our|ours|us)\b", swap, sentence,
+                          flags=re.I).rstrip(".!? ")
+    return ""
+
+
+def _company_sentence(posting: str, company: str) -> str:
+    """First plain sentence of the posting that describes the company, for the hook."""
+    if not company:
+        return ""
+    for sentence in _posting_sentences(posting):
         words = sentence.split()
         if (sentence.lower().startswith(company.lower()) and 8 <= len(words) <= 35
                 and "http" not in sentence and not re.search(r"\bapply\b", sentence, re.I)):
@@ -310,8 +338,12 @@ def build_fallback_letter(tailored: TailoredResume, *, company: str, role: str,
     ranked = sorted(tailored.keywords, key=lambda k: {"skill": 0, "tool": 1}.get(k.category, 2))
     focus = [display_term(k) for k in ranked if k.category in ("skill", "tool")][:3]
     about = _company_sentence(job_text, company)
-    if about and focus:
-        # Two sentences: the company fact stays out of the first-person claim sentence.
+    need = _need_sentence(job_text, role)
+    if about and need and focus:
+        # Company facts stay in their own sentences, out of the first-person claim sentence.
+        hook = (f"{about}. {need}. The role centres on {_join(focus)}, areas my background "
+                "speaks to directly.")
+    elif about and focus:
         hook = (f"{about}. Your {role} opening centres on {_join(focus)}, areas my "
                 "background speaks to directly.")
     elif focus:
@@ -321,7 +353,7 @@ def build_fallback_letter(tailored: TailoredResume, *, company: str, role: str,
         hook = (f"Your {role} opening at {company} stands out to me because it builds on the "
                 "work I have done so far.")
 
-    evidence = evidence_points(tailored, limit=5)
+    evidence = evidence_points(tailored, limit=MAX_EVIDENCE_POINTS)
     evidence_sentences: list[str] = []
     last_employer = None
     same_role = 0
@@ -346,7 +378,14 @@ def build_fallback_letter(tailored: TailoredResume, *, company: str, role: str,
     context = ""
     if profile.experience:
         exp = profile.experience[0]
-        context = f"Most recently, I worked as {exp.title} at {exp.company}"
+        start = "" if is_placeholder(exp.start) else exp.start
+        end = "" if is_placeholder(exp.end) else exp.end
+        if start and end and end.lower() not in ("present", "current", "now", "today"):
+            context = f"From {start} to {end}, I worked as {exp.title} at {exp.company}"
+        elif start:
+            context = f"Since {start}, I have worked as {exp.title} at {exp.company}"
+        else:
+            context = f"Most recently, I worked as {exp.title} at {exp.company}"
         if not is_placeholder(exp.description):
             desc = _lower_first(exp.description.rstrip("."))
             context += f", {_article(desc)} {desc}"
@@ -363,8 +402,14 @@ def build_fallback_letter(tailored: TailoredResume, *, company: str, role: str,
                                 f"professional certifications, including {_join(cert_names)}.")
     elif cert_names:
         credentials["certs"] = f"My certifications include {_join(cert_names)}."
-    if tailored.skills:
-        credentials["skills"] = f"My toolkit includes {_join(tailored.skills[:5])}."
+    toolkit = tailored.skills[:5]
+    if toolkit:
+        credentials["skills"] = f"My toolkit includes {_join(toolkit)}."
+    already = {t.lower() for t in [*focus, *toolkit]}
+    more = [display_term(k) for k in ranked if k.category in ("skill", "tool")
+            and display_term(k).lower() not in already][:6]
+    if len(more) >= 2:
+        credentials["coverage"] = f"My background also covers {_join(more)}."
     languages = [lang for lang in profile.languages if not is_placeholder(lang)]
     if languages:
         credentials["languages"] = f"I work in {_join(languages)}."
@@ -380,15 +425,15 @@ def build_fallback_letter(tailored: TailoredResume, *, company: str, role: str,
     # Mandatory pieces first, then optional ones in priority order while the body stays
     # within 250-350 words.
     chosen = {"context": bool(context), "evidence": min(2, len(evidence_sentences))}
-    optional = ["evidence3", "education", "certs", "languages", "skills", "evidence4",
-                "evidence5", "offer"]
+    # Never more than MAX_EVIDENCE_POINTS evidence points: length comes from credentials.
+    optional = ["evidence3", "education", "certs", "languages", "skills", "coverage", "offer"]
     offer = "I would be glad to walk you through how I delivered these results in more detail."
 
     def assemble() -> list[str]:
         p1 = " ".join(x for x in (hook, context if chosen["context"] else "") if x)
         p2 = " ".join(evidence_sentences[: chosen["evidence"]])
-        creds = [credentials[k] for k in ("education", "certs", "skills", "languages")
-                 if chosen.get(k)]
+        creds = [credentials[k] for k in ("education", "certs", "skills", "coverage",
+                                          "languages") if chosen.get(k)]
         p3 = " ".join([*creds, work_auth]).strip()
         p4 = f"{offer} {close}" if chosen.get("offer") else close
         return [p for p in (p1, p2, p3, p4) if p]
@@ -401,7 +446,8 @@ def build_fallback_letter(tailored: TailoredResume, *, company: str, role: str,
             wanted = int(item[-1])
             if len(evidence_sentences) >= wanted:
                 chosen["evidence"] = wanted
-        elif item in credentials or (item == "offer" and evidence_sentences):
+        elif item in credentials or (item == "offer" and any(
+                re.search(r"\d", e) for e in evidence_sentences)):
             chosen[item] = True
         if word_count(" ".join(assemble())) > MAX_LETTER_WORDS:
             chosen = before

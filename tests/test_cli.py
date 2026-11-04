@@ -123,3 +123,43 @@ def test_score_rejects_non_docx(tmp_path):
 def test_list_when_empty(tmp_path):
     result = runner.invoke(app, ["--db", str(tmp_path / "jobs.db"), "list"])
     assert "No applications tracked yet." in result.output
+
+
+def test_rejected_model_draft_is_reported(tmp_path, monkeypatch, profile):
+    import json
+
+    from jobpipe import cli
+    from jobpipe.llm import DryRunClient
+
+    bad_letter = ("Dear Hiring Team at Acme,\n\nI am writing to apply for the Customer Success "
+                  "Manager role.\n\nKind regards,\nTaylor Sample")
+    scripted = DryRunClient(responses=[
+        json.dumps(profile.experience[0].real_bullets),
+        json.dumps(profile.experience[1].real_bullets),
+        profile.summary,
+        bad_letter,
+    ])
+    monkeypatch.setattr(cli, "get_client", lambda: scripted)
+    result = _apply(tmp_path)
+    assert result.exit_code == 0, result.output
+    report = (tmp_path / "output" / "Acme_ats_report.md").read_text(encoding="utf-8")
+    assert "Draft 1 rejected: banned_opening" in report
+    letter = Document(str(tmp_path / "output" / "Taylor_Sample_CoverLetter_Acme.docx"))
+    assert "I am writing to apply" not in "\n".join(p.text for p in letter.paragraphs)
+
+
+def test_documents_breaking_a_hard_rule_are_not_tracked(tmp_path, monkeypatch):
+    from jobpipe import cli
+    from jobpipe.tailor import CoverLetter
+
+    bad = ("Dear Hiring Team at Acme,\n\nI am writing to apply for this role. I hold a Czech "
+           "work permit.\n\nKind regards,\nTaylor Sample")
+    monkeypatch.setattr(cli, "write_cover_letter",
+                        lambda *a, **k: CoverLetter(text=bad, attempts=1, used_fallback=False))
+    result = _apply(tmp_path)
+    assert result.exit_code == 1
+    assert "break a hard rule" in result.output
+    report = (tmp_path / "output" / "Acme_ats_report.md").read_text(encoding="utf-8")
+    assert "banned_opening" in report and "work_auth_phrasing" in report
+    listed = runner.invoke(app, ["--db", str(tmp_path / "jobs.db"), "list"])
+    assert "No applications tracked yet." in listed.output

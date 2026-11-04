@@ -17,7 +17,10 @@ These rules are built into `render.py` and checked again by re-opening the files
 - Real Word bullets (`List Bullet`), with no decorative glyphs.
 - Contact details in the document body. Many parsers skip page headers and footers.
 - No tables, text boxes, images, icons or shapes.
-- One page is ideal and two is the maximum.
+- One page is ideal and two is the maximum. If the estimated length exceeds 2 pages,
+  `render_resume` leaves out the least relevant bullet of the oldest role and re-renders,
+  repeating as needed. Older roles keep at least 2 bullets and the most recent role keeps
+  at least 3. Every bullet left out is listed in the report's generation notes.
 
 ## Keyword extraction
 
@@ -102,7 +105,8 @@ wording, relocation reasons or personal relationships, and file names that break
 | Deduction | Issue |
 |---|---|
 | -30 | the company is never named (no specific hook) |
-| -15 | no numbers at all |
+| -15 | no quantified evidence at all |
+| -10 | only one quantified evidence point (the target is 2-3) |
 | -10 | fewer than 3 or more than 5 body paragraphs |
 | -10 each | a cliché ("team player", "passionate about", "to whom it may concern", ...) |
 

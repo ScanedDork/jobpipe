@@ -152,3 +152,30 @@ def test_invalid_templates_are_rejected(tmp_path, change, message):
 def test_missing_template_lists_available():
     with pytest.raises(TemplateError, match="classic"):
         load_template("does-not-exist")
+
+
+def test_long_profiles_are_trimmed_to_two_pages(job, tmp_path):
+    import yaml
+
+    from jobpipe.profile import parse_profile
+    from jobpipe.scorer import estimate_pages
+
+    from .conftest import EXAMPLE_PROFILE
+
+    data = yaml.safe_load(EXAMPLE_PROFILE.read_text(encoding="utf-8"))
+    data["experience"] = [
+        {"title": "Account Manager", "company": f"Example Company {r}", "start": "2010",
+         "end": "2020", "bullets": [
+             f"Delivered programme {r}{b} for logistics clients across Central Europe, "
+             "coordinating ten stakeholders and reporting weekly progress to the regional "
+             "leadership team." for b in range(6)]}
+        for r in range(6)]
+    tailored = tailor_resume(parse_profile(data), job, DryRunClient(), company="Acme",
+                             role=ROLE)
+    path = render_resume(tailored, tmp_path / "Taylor_Sample_Resume_Acme.docx",
+                         load_template("classic"))
+    doc = Document(str(path))
+    assert estimate_pages((p.text, p.style.name) for p in doc.paragraphs) <= 2.0
+    assert len(tailored.roles[0].bullets) == 6  # the most recent role is trimmed last
+    assert all(len(role.bullets) >= 2 for role in tailored.roles)
+    assert any(note.startswith("Left out") for note in tailored.notes)

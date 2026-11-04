@@ -194,3 +194,27 @@ def test_sparse_profile_letter_is_short_but_valid(template_profile, job):
     assert "length" in {w.code for w in letter.warnings}
     assert check_cover_letter_opening(letter.text) == []
     assert "TODO" not in letter.text
+
+
+def test_fallback_letter_uses_two_to_three_evidence_points(profile, job):
+    letter = build_fallback_letter(_tailor(profile, job), company="Acme", role=ROLE,
+                                   job_text=job.text)
+    clauses = [b[0].lower() + b[1:].rstrip(".") for exp in profile.experience
+               for b in exp.real_bullets]
+    assert 2 <= sum(clause in letter for clause in clauses) <= 3
+
+
+def test_hook_reuses_the_posting_in_second_person(profile, job):
+    letter = build_fallback_letter(_tailor(profile, job), company="Acme", role=ROLE,
+                                   job_text=job.text)
+    assert "You are growing your Prague hub and need a Customer Success Manager" in letter
+
+
+def test_need_sentence_skips_benefits():
+    from jobpipe.tailor import _need_sentence
+
+    posting = "We offer a great salary and growing benefits for everyone here.\n"
+    assert _need_sentence(posting, ROLE) == ""
+    posting += "We're hiring a Customer Success Manager to look after our clients in Brno."
+    assert _need_sentence(posting, ROLE) == (
+        "You're hiring a Customer Success Manager to look after your clients in Brno")
