@@ -129,6 +129,26 @@ class ScoreReport:
     def to_markdown(self, title: str = "ATS report") -> str:
         return _to_markdown(self, title)
 
+    def to_dict(self) -> dict:
+        """JSON-friendly form of the report, used by the web interface."""
+        cover = {m.keyword.canonical: m.status for m in self.cover_keyword_matches}
+        return {
+            "overall": self.overall,
+            "grade": self.grade,
+            "hard_violations": self.hard_violations,
+            "categories": [{"key": c.key, "label": LABELS[c.key], "score": c.score,
+                            "grade": c.grade, "notes": c.notes} for c in self.categories],
+            "red_flags": self.red_flags,
+            "findings": [{"where": f.where, "excerpt": f.excerpt, "problem": f.problem,
+                          "fix": f.fix} for f in self.findings],
+            "keywords": [{"phrase": m.keyword.phrase, "category": m.keyword.category,
+                          "weight": m.keyword.weight, "resume": m.status,
+                          "cover": cover.get(m.keyword.canonical)}
+                         for m in self.keyword_matches],
+            "seniority": self.seniority,
+            "sections": [{"heading": h, "body": b} for h, b in self.extra_sections],
+        }
+
 
 # --- reading .docx ------------------------------------------------------------------------
 
