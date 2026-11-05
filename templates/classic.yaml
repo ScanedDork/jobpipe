@@ -1,0 +1,19 @@
+# Default template: single column, Calibri 11 pt, A4, conventional headings.
+# Every value is validated against ATS rules when the template is loaded
+# (standard font, sensible sizes and margins, standard heading names).
+name: classic
+description: Single-column Calibri 11 pt, A4, 2 cm margins. The safe default.
+font: Calibri
+body_size: 11
+name_size: 16
+heading_size: 12
+margins_cm: 2.0
+space_after_pt: 2
+headings:
+  summary: Professional Summary
+  skills: Skills
+  experience: Professional Experience
+  education: Education
+  certifications: Certifications
+  languages: Languages
+section_order: [summary, skills, experience, education, certifications, languages]

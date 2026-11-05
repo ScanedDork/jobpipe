@@ -1,0 +1,17 @@
+# Denser variant for keeping a longer profile on fewer pages.
+name: compact
+description: Single-column Arial 10 pt, A4, 1.5 cm margins, experience before skills.
+font: Arial
+body_size: 10
+name_size: 15
+heading_size: 11
+margins_cm: 1.5
+space_after_pt: 1
+headings:
+  summary: Profile
+  skills: Key Skills
+  experience: Work Experience
+  education: Education
+  certifications: Certifications
+  languages: Languages
+section_order: [summary, experience, skills, education, certifications, languages]

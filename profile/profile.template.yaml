@@ -1,0 +1,86 @@
+# jobpipe profile: the ONLY source of facts for your resume and cover letters.
+#
+# Setup:  cp profile/profile.template.yaml profile/profile.yaml
+#         (profile/profile.yaml is git-ignored so your real details are never committed)
+#
+# Rules:
+#   - Anything containing "TODO" is a placeholder. jobpipe leaves placeholders out of the
+#     documents and lists them in the ATS report, so fill them in with REAL facts only.
+#   - Never add numbers, tools or results you cannot back up: generated text is checked
+#     against this file, and anything not supported here is rejected.
+#   - work_authorisation must be exactly the statement below, or empty.
+
+name:
+  full: Ramar Ranjeet Skanda
+  preferred: Ranjeet Skanda          # used on documents and in output file names
+
+headline: "TODO: one-line professional headline built only from facts in this file"
+location: Prague, Czech Republic
+
+contact:
+  email: "TODO: email address"
+  phone: "TODO: phone number with country code"
+  linkedin: "TODO: linkedin.com/in/your-profile"
+  website: ""
+
+work_authorisation: "EU work authorised, residency in process — no sponsorship required"
+
+target_roles:
+  - Business Development
+  - Account Management
+  - Customer Success
+  - Sales Operations
+  - Product Management
+
+summary: "TODO: 2-3 sentence professional summary using only facts in this file"
+
+experience:
+  - title: Founder                   # from "Founded and ran DORK Company"; change if you used another title
+    company: DORK Company
+    location: "TODO: city, country"
+    start: "2021"
+    end: "2025"
+    description: Bootstrapped B2B agency.
+    bullets:
+      - Founded and ran the agency, serving B2B clients in India, the US and the Middle East.
+      - "TODO: achievement bullet (action + scope + result), with a real metric from your records"
+      - "TODO: achievement bullet (action + scope + result), with a real metric from your records"
+      - "TODO: achievement bullet (action + scope + result), with a real metric from your records"
+  # - title: "TODO: earlier role"
+  #   company: "TODO: employer"
+  #   location: "TODO: city, country"
+  #   start: "TODO: year"
+  #   end: "TODO: year"
+  #   description: ""
+  #   bullets:
+  #     - "TODO: achievement bullet"
+
+education:
+  - degree: M.Tech in Biomedical Engineering
+    institution: MNNIT Allahabad
+    location: "TODO: city, country"
+    year: "TODO: graduation year"
+
+certification_hours: "600+"
+certifications:
+  - name: Microsoft AI Product Management
+    issuer: "TODO: issuing platform"
+    year: "TODO: year"
+  - name: Salesforce Sales Operations
+    issuer: "TODO: issuing platform"
+    year: "TODO: year"
+  - name: European Business Law
+    issuer: "TODO: issuing institution"
+    year: "TODO: year"
+  - name: Agile/Jira
+    issuer: "TODO: issuing platform"
+    year: "TODO: year"
+  - name: IIM Bangalore programs      # TODO: replace with one entry per programme name
+    issuer: ""
+    year: "TODO: year"
+
+skills:
+  - "TODO: a hard skill or tool you can evidence"
+
+languages:
+  - "TODO: language (CEFR level, e.g. C2)"

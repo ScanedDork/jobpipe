@@ -1,0 +1,15 @@
+TASK: Write the professional summary at the top of a resume for the $role role at $company.
+
+PROFILE FACTS (the only facts you may use):
+$facts
+
+Keywords from the job posting that the profile supports (use the exact phrasing where natural):
+$keywords
+
+Starting point to adapt:
+$current_summary
+
+Instructions:
+- 2-3 sentences, at most 60 words, no first person ("I", "my"), no mention of $company.
+- Lead with the facts most relevant to the role. Keep every number exactly as written in PROFILE FACTS; add no new numbers, tools, skills or claims.
+- Rules 1-4 from the system prompt apply. Return only the summary text.
