@@ -29,13 +29,13 @@ Python 3.11+ is required.
 With [uv](https://docs.astral.sh/uv/):
 
 ```bash
-uv venv && uv pip install -e ".[dev]"
+uv venv && uv pip install -e ".[dev,web]"
 ```
 
 or with pip:
 
 ```bash
-python -m venv .venv && . .venv/bin/activate && pip install -e ".[dev]"
+python -m venv .venv && . .venv/bin/activate && pip install -e ".[dev,web]"
 ```
 
 Then create your profile from the template:
@@ -88,12 +88,50 @@ The report this run produces is in
 | `jobpipe list` | Show tracked applications. |
 | `jobpipe status ID STATUS` | Set the status: `prepared`, `applied`, `interview`, `offer`, `rejected` or `withdrawn`. |
 | `jobpipe export --csv [--out FILE]` | Export the tracker to CSV (default `output/applications.csv`). |
+| `jobpipe serve [--port 8000] [--profile P] [--out DIR]` | Start the web interface (see below). |
 
 The tracker lives in `data/jobpipe.db`. Use `--db PATH` before the command, or set
 `JOBPIPE_DB`, to use another file. New rows start as `prepared` because jobpipe writes the
 documents but does not send them. Run `jobpipe status ID applied` once you have applied.
 Tracker columns: `id, date, company, role, url, status, resume_path, cover_path,
 ats_score, notes`.
+
+## Web interface
+
+`jobpipe serve` starts a local web interface for everything the CLI does: generate an
+application, read the ATS report, download the documents, update tracker statuses,
+export CSV, score any .docx, and check your profile for gaps.
+
+```bash
+pip install -e ".[web]"          # FastAPI, Uvicorn, python-multipart
+jobpipe serve                    # http://127.0.0.1:8000
+jobpipe serve --profile profile/profile.example.yaml --port 8080   # try it with the demo profile
+```
+
+![New application screen with the ATS score, category grades and download buttons](docs/images/web-new-application.png)
+
+| Tab | What it does |
+|---|---|
+| New application | Paste a posting (or load a .txt), enter the company, then generate. Shows the score, category grades, red flags, line-level fixes, keyword match, the cover letter text, the claims check and profile gaps, with download buttons for both .docx files and the report. |
+| Tracker | Every application with its score and documents; change the status inline; export CSV. |
+| Score documents | Upload any resume (and optionally a cover letter and posting) for a full audit. |
+| Profile | Read-only view of `profile.yaml`: facts, bullet counts per role and every TODO placeholder still to fill. |
+
+The interface runs the same pipeline as `jobpipe apply`, with the same hard rules. If the
+documents break one, the application is not logged and the report says why. The header
+shows which LLM provider is active, and warns when running in dry-run mode.
+
+Privacy and safety:
+- It binds to 127.0.0.1 and only answers requests addressed to a loopback host name, so
+  other websites cannot reach it through DNS rebinding.
+- The page loads nothing from the internet: no CDN, fonts or analytics.
+- It never edits `profile.yaml`; that file stays the single source of truth.
+- Downloads are limited to generated files in the output folder, and uploads are limited
+  to 5 MB `.docx` files.
+- `--host 0.0.0.0` exposes your profile and documents to your network, and the command
+  warns before doing it.
+
+The JSON API is documented at `http://127.0.0.1:8000/api/docs` while the server runs.
 
 ## LLM providers
 
@@ -206,7 +244,7 @@ an unrecognised heading or a missing core section. Layout features that hurt par
 ## Development
 
 ```bash
-pytest           # 170+ tests, no network access
+pytest           # 190+ tests, no network access
 ruff check .
 ```
 
@@ -217,6 +255,9 @@ suite blocks any network call.
 ```text
 src/jobpipe/
   cli.py         Typer commands
+  pipeline.py    the apply pipeline shared by the CLI and the web interface
+  web.py         FastAPI app for `jobpipe serve`
+  static/        web frontend (plain HTML, CSS and JavaScript; no build step)
   profile.py     profile.yaml loading and validation
   keywords.py    vocabulary, synonyms, posting keyword extraction and matching
   tailor.py      relevance ordering, LLM rephrasing, cover letter retry/fallback

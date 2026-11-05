@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>jobpipe</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%233451b2'/%3E%3Cpath d='M9 17l5 5 9-11' stroke='white' stroke-width='3.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-name">jobpipe</span>
+      </div>
+      <div class="status-chips" id="status-chips" aria-live="polite"></div>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button class="tab" role="tab" id="tab-btn-apply" aria-controls="tab-apply" data-tab="apply">New application</button>
+      <button class="tab" role="tab" id="tab-btn-tracker" aria-controls="tab-tracker" data-tab="tracker">Tracker</button>
+      <button class="tab" role="tab" id="tab-btn-score" aria-controls="tab-score" data-tab="score">Score documents</button>
+      <button class="tab" role="tab" id="tab-btn-profile" aria-controls="tab-profile" data-tab="profile">Profile</button>
+    </nav>
+  </header>
+
+  <main id="main">
+    <!-- New application -->
+    <section class="panel" id="tab-apply" role="tabpanel" aria-labelledby="tab-btn-apply" hidden>
+      <div class="split">
+        <form class="card form" id="apply-form" novalidate>
+          <h1 class="card-title">New application</h1>
+          <p class="hint">Paste a job posting. jobpipe tailors your resume and cover letter from
+            <code>profile.yaml</code> facts only, scores both and logs the application.</p>
+          <div class="field">
+            <label for="apply-company">Company <span class="req" aria-hidden="true">*</span></label>
+            <input id="apply-company" name="company" required maxlength="200" autocomplete="organization" placeholder="Acme">
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="apply-role">Role</label>
+              <input id="apply-role" name="role" maxlength="200" placeholder="From the posting">
+            </div>
+            <div class="field">
+              <label for="apply-template">Template</label>
+              <select id="apply-template" name="template"></select>
+            </div>
+          </div>
+          <div class="field">
+            <label for="apply-url">Posting URL</label>
+            <input id="apply-url" name="url" type="url" maxlength="2000" placeholder="From the posting">
+          </div>
+          <div class="field">
+            <div class="label-row">
+              <label for="apply-posting">Job posting <span class="req" aria-hidden="true">*</span></label>
+              <label class="file-link">
+                <input type="file" id="apply-posting-file" accept=".txt,.md,text/plain" class="visually-hidden">
+                <span>Load from .txt file</span>
+              </label>
+            </div>
+            <textarea id="apply-posting" name="posting" required rows="14" maxlength="50000" placeholder="Paste the full posting, including requirements and nice-to-haves"></textarea>
+          </div>
+          <div class="form-error" id="apply-error" role="alert" hidden></div>
+          <div class="actions">
+            <button type="submit" class="btn btn-primary" id="apply-submit">Generate documents</button>
+            <span class="progress" id="apply-progress" hidden><span class="spinner" aria-hidden="true"></span> Tailoring, rendering and scoring…</span>
+          </div>
+        </form>
+        <div class="result" id="apply-result" aria-live="polite">
+          <div class="empty card">
+            <p class="empty-title">Your documents will appear here</p>
+            <p class="hint">You get a resume and cover letter as .docx files, plus an ATS report
+              with red flags and line-level fixes.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tracker -->
+    <section class="panel" id="tab-tracker" role="tabpanel" aria-labelledby="tab-btn-tracker" hidden>
+      <div class="card">
+        <div class="card-head">
+          <h1 class="card-title">Applications</h1>
+          <div class="card-tools">
+            <span class="muted" id="tracker-count"></span>
+            <a class="btn btn-secondary" href="/api/applications.csv" download>Export CSV</a>
+          </div>
+        </div>
+        <div id="tracker-body"></div>
+      </div>
+    </section>
+
+    <!-- Score documents -->
+    <section class="panel" id="tab-score" role="tabpanel" aria-labelledby="tab-btn-score" hidden>
+      <div class="split">
+        <form class="card form" id="score-form" novalidate>
+          <h1 class="card-title">Score documents</h1>
+          <p class="hint">Audit any resume for ATS readiness, including one jobpipe did not
+            make. Add the posting to unlock the keyword match.</p>
+          <div class="field">
+            <label for="score-resume">Resume (.docx) <span class="req" aria-hidden="true">*</span></label>
+            <input id="score-resume" name="resume" type="file" accept=".docx" required>
+          </div>
+          <div class="field">
+            <label for="score-cover">Cover letter (.docx)</label>
+            <input id="score-cover" name="cover" type="file" accept=".docx">
+          </div>
+          <div class="field">
+            <label for="score-posting">Job posting</label>
+            <textarea id="score-posting" name="posting" rows="8" maxlength="50000" placeholder="Optional: paste the posting for keyword analysis"></textarea>
+          </div>
+          <div class="form-error" id="score-error" role="alert" hidden></div>
+          <div class="actions">
+            <button type="submit" class="btn btn-primary" id="score-submit">Score</button>
+            <span class="progress" id="score-progress" hidden><span class="spinner" aria-hidden="true"></span> Scoring…</span>
+          </div>
+        </form>
+        <div class="result" id="score-result" aria-live="polite">
+          <div class="empty card">
+            <p class="empty-title">The ATS report will appear here</p>
+            <p class="hint">Scoring is strict on purpose: B means safe to send, A is rare.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Profile -->
+    <section class="panel" id="tab-profile" role="tabpanel" aria-labelledby="tab-btn-profile" hidden>
+      <div id="profile-body"></div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>

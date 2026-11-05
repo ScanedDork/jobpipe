@@ -15,9 +15,15 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+web = [
+    "fastapi>=0.110",
+    "uvicorn>=0.29",
+    "python-multipart>=0.0.9",
+]
 dev = [
     "pytest>=8.0",
     "ruff>=0.6",
+    "httpx2>=2.0",  # test client for the web API (Starlette >= 1.x)
 ]
 
 [project.scripts]

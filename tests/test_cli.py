@@ -128,7 +128,7 @@ def test_list_when_empty(tmp_path):
 def test_rejected_model_draft_is_reported(tmp_path, monkeypatch, profile):
     import json
 
-    from jobpipe import cli
+    from jobpipe import pipeline
     from jobpipe.llm import DryRunClient
 
     bad_letter = ("Dear Hiring Team at Acme,\n\nI am writing to apply for the Customer Success "
@@ -139,7 +139,7 @@ def test_rejected_model_draft_is_reported(tmp_path, monkeypatch, profile):
         profile.summary,
         bad_letter,
     ])
-    monkeypatch.setattr(cli, "get_client", lambda: scripted)
+    monkeypatch.setattr(pipeline, "get_client", lambda: scripted)
     result = _apply(tmp_path)
     assert result.exit_code == 0, result.output
     report = (tmp_path / "output" / "Acme_ats_report.md").read_text(encoding="utf-8")
@@ -149,12 +149,12 @@ def test_rejected_model_draft_is_reported(tmp_path, monkeypatch, profile):
 
 
 def test_documents_breaking_a_hard_rule_are_not_tracked(tmp_path, monkeypatch):
-    from jobpipe import cli
+    from jobpipe import pipeline
     from jobpipe.tailor import CoverLetter
 
     bad = ("Dear Hiring Team at Acme,\n\nI am writing to apply for this role. I hold a Czech "
            "work permit.\n\nKind regards,\nTaylor Sample")
-    monkeypatch.setattr(cli, "write_cover_letter",
+    monkeypatch.setattr(pipeline, "write_cover_letter",
                         lambda *a, **k: CoverLetter(text=bad, attempts=1, used_fallback=False))
     result = _apply(tmp_path)
     assert result.exit_code == 1
